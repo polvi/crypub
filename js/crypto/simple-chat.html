@@ -155,15 +155,6 @@ PUBNUB.subscribe({
     },
     callback : function(message) { // RECEIVED A MESSAGE.
         aes_key = utf82str(private_decrypt(key.privateKey, message));
-    },
-    connect  : function() {        // CONNECTION ESTABLISHED.
-
-        // SEND MESSAGE
-        PUBNUB.publish({
-            channel : "rsa",
-            message : base64x_encode(key.publicKey)
-        })
-
     }
 })
 
