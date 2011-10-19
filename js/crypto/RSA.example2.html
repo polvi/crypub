@@ -1,0 +1,124 @@
+<html>
+    <head>
+	<title>RSA Test - Titaniumcore Project</title>
+	<script src="../tools/packages.js"></script>
+	<script src="../tools/trace.js"></script>
+	<script src="../tools/elapse.js"></script>
+	<script src="../tools/isarray.js"></script>
+	<script src="../tools/binary.js"></script>
+
+	<script src="SecureRandom.js"></script>
+	<script src="BigInteger.init1.js"></script>
+	<script src="BigInteger.init2.js"></script>
+	<script src="RSA.init1.js"></script>
+	<script src="RSA.init2.js"></script>
+
+	<script src="Cipher.js"></script>
+	<script src="SOAEP.js"></script>
+	<script src="BitPadding.js"></script>
+	<script src="RSAKeyFormat.js"></script>
+	<script src="RSAMessageFormat.js"></script>
+	<script src="RSAMessageFormatSOAEP.js"></script>
+	<script src="RSAMessageFormatSOAEP_DIRECT.js"></script>
+	<script src="RSAMessageFormatBitPadding.js"></script>
+    </head>
+    <body>
+        <script>
+            // Import classes.
+            var RSA = __import( this,"titaniumcore.crypto.RSA" );
+            var BigInteger = __import( this,"titaniumcore.crypto.BigInteger" );
+            var RSAKeyFormat = __import( packageRoot, "titaniumcore.crypto.RSAKeyFormat" );
+	    // var RSAMessageFormatSOAEP = __import( this, "titaniumcore.crypto.RSAMessageFormatSOAEP" );
+	    var RSAMessageFormatSOAEP = __import( this, "titaniumcore.crypto.RSAMessageFormatSOAEP_DIRECT" );
+	    var RSAMessageFormatBitPadding = __import( this, "titaniumcore.crypto.RSAMessageFormatBitPadding" );
+
+            function createKeyBytes(){
+                // Create an RSA engine.
+                var rsa = new RSA();
+                rsa.keyFormat = RSAKeyFormat;
+                rsa.messageFormat = RSAMessageFormatSOAEP;
+
+                // Generate new RSA key.
+                rsa.generate( 256,65537 );
+
+                var publicKey = rsa.publicKeyBytes();
+                var privateKey = rsa.privateKeyBytes();
+                return {
+                    publicKey:publicKey,privateKey:privateKey
+                };
+            }
+
+            function testPublicEncrypt( key, message ) {
+                // Create an RSA engine.
+                var rsa = new RSA();
+                rsa.keyFormat = RSAKeyFormat;
+                rsa.messageFormat = RSAMessageFormatSOAEP;
+                rsa.publicKeyBytes( key );
+                return rsa.publicEncrypt( message );
+            }
+
+            function testPublicDecrypt( key, message ) {
+                // Create an RSA engine.
+                var rsa = new RSA();
+                rsa.keyFormat = RSAKeyFormat;
+                rsa.messageFormat = RSAMessageFormatSOAEP;
+                rsa.publicKeyBytes( key );
+                return rsa.publicDecrypt( message );
+            }
+
+            function testPrivateEncrypt( key, message ) {
+                // Create an RSA engine.
+                var rsa = new RSA();
+                rsa.keyFormat = RSAKeyFormat;
+                rsa.messageFormat = RSAMessageFormatSOAEP;
+                rsa.privateKeyBytes( key );
+                return rsa.privateEncrypt( message );
+            }
+
+            function testPrivateDecrypt( key, message ) {
+                // Create an RSA engine.
+                var rsa = new RSA();
+                rsa.keyFormat = RSAKeyFormat;
+                rsa.messageFormat = RSAMessageFormatSOAEP;
+                rsa.privateKeyBytes( key );
+                return rsa.privateDecrypt( message );
+            }
+
+            var key = createKeyBytes();
+
+            // create a message
+            var message = [ 0xDE,0xAD,0xCA,0xFE, 0xDE,0xAD,0xCA,0xFE, 0xDE,0xAD,0xCA,0xFE, 0xDE,0xAD,0xCA,0xFE ];
+
+            // Public Key Encryption and Decryption
+
+            // Encrypt by a public key.
+            var encrypted1 = testPublicEncrypt( key.publicKey, message );
+
+            // Decrypt by a private key.
+            var decrypted1 = testPrivateDecrypt( key.privateKey, encrypted1 );
+
+            // Private Key Encryption and Decryption ( Digital-Signature )
+
+            // Encrypt by a private key.
+            var encrypted2 = testPrivateEncrypt( key.privateKey, message );
+
+            // Decrypt by a public key.
+            var decrypted2 = testPublicDecrypt( key.publicKey, encrypted2 );
+
+            // Print
+            trace( "*** the generated RSA key ***" );
+            trace( "private key :" + hex( key.privateKey ) );
+            trace( "public key :" + hex( key.publicKey ) );
+            trace("");
+            trace( "*** Public Key Encryption and Decryption Test ***" );
+            trace( "message:"  +hex( message ) );
+            trace( "encrypted:"+hex( encrypted1 ) );
+            trace( "decrypted:"+hex( decrypted1 ) );
+            trace("");
+            trace( "*** Private Key Encryption and Decryption Test ***" );
+            trace( "message:"  +hex( message ) );
+            trace( "encrypted:"+hex( encrypted2 ) );
+            trace( "decrypted:"+hex( decrypted2 ) );
+        </script>
+    </body>
+</html>
