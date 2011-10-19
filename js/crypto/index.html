@@ -84,6 +84,7 @@
             }
 
             var key = createKeyBytes();
+            var partner_public_key = false;
 
             // create a message
             var message = [ 0xDE,0xAD,0xCA,0xFE, 0xDE,0xAD,0xCA,0xFE, 0xDE,0xAD,0xCA,0xFE, 0xDE,0xAD,0xCA,0xFE ];
@@ -104,6 +105,14 @@
             // Decrypt by a public key.
             var decrypted2 = testPublicDecrypt( key.publicKey, encrypted2 );
 
+            function getPartnerPublicKey( sent_key ) {
+                // Create an RSA engine.
+		if (hex(key.publicKey) != hex(sent_key)) { 
+			partner_public_key = sent_key;
+		}
+            }
+
+
 
 
     // LISTEN FOR MESSAGES
@@ -119,10 +128,29 @@
 
             // SEND MESSAGE
             PUBNUB.publish({
-                channel : "hello_world",
+                channel : "key_exchange",
                 message : key.publicKey
             })
 
+        }
+    })
+    PUBNUB.subscribe({
+        channel  : "key_exchange",      // CONNECT TO THIS CHANNEL.
+        error    : function() {        // LOST CONNECTION (auto reconnects)
+            alert("Connection Lost. Will auto-reconnect when Online.")
+        },
+        callback : function(message) { // RECEIVED A MESSAGE.
+            getPartnerPublicKey(message)
+        },
+        connect  : function() {        // CONNECTION ESTABLISHED.
+
+            // SEND MESSAGE
+/*
+            PUBNUB.publish({
+                channel : "hello_world",
+                message : key.publicKey
+            })
+*/
         }
     })
 
