@@ -46,105 +46,104 @@
 
 <script>
 
-      // Import classes.
-      var RSA = __import( this,"titaniumcore.crypto.RSA" );
-      var BigInteger = __import( this,"titaniumcore.crypto.BigInteger" );
-      var RSAKeyFormat = __import( packageRoot, "titaniumcore.crypto.RSAKeyFormat" );
-     // var RSAMessageFormatSOAEP = __import( this, "titaniumcore.crypto.RSAMessageFormatSOAEP" );
-    var RSAMessageFormatSOAEP = __import( this, "titaniumcore.crypto.RSAMessageFormatSOAEP_DIRECT" );
-    var RSAMessageFormatBitPadding = __import( this, "titaniumcore.crypto.RSAMessageFormatBitPadding" );
+// Import classes.
+var RSA = __import( this,"titaniumcore.crypto.RSA" );
+var BigInteger = __import( this,"titaniumcore.crypto.BigInteger" );
+var RSAKeyFormat = __import( packageRoot, "titaniumcore.crypto.RSAKeyFormat" );
+var RSAMessageFormatSOAEP = __import( this, "titaniumcore.crypto.RSAMessageFormatSOAEP_DIRECT" );
+var RSAMessageFormatBitPadding = __import( this, "titaniumcore.crypto.RSAMessageFormatBitPadding" );
 
-            function createKeyBytes(){
-                // Create an RSA engine.
-                var rsa = new RSA();
-                rsa.keyFormat = RSAKeyFormat;
-                rsa.messageFormat = RSAMessageFormatSOAEP;
+function createKeyBytes(){
+  // Create an RSA engine.
+  var rsa = new RSA();
+  rsa.keyFormat = RSAKeyFormat;
+  rsa.messageFormat = RSAMessageFormatSOAEP;
 
-                // Generate new RSA key.
-                rsa.generate( 256,65537 );
+  // Generate new RSA key.
+  rsa.generate( 256,65537 );
 
-                var publicKey = rsa.publicKeyBytes();
-                var privateKey = rsa.privateKeyBytes();
-                return {
-                    publicKey:publicKey,privateKey:privateKey
-                };
-            }
+  var publicKey = rsa.publicKeyBytes();
+  var privateKey = rsa.privateKeyBytes();
+  return {
+    publicKey:publicKey,privateKey:privateKey
+  };
+}
 
-            function testPublicEncrypt( key, message ) {
-                // Create an RSA engine.
-                var rsa = new RSA();
-                rsa.keyFormat = RSAKeyFormat;
-                rsa.messageFormat = RSAMessageFormatSOAEP;
-                rsa.publicKeyBytes( key );
-                return rsa.publicEncrypt( message );
-            }
+function public_encrypt( key, message ) {
+  // Create an RSA engine.
+  var rsa = new RSA();
+  rsa.keyFormat = RSAKeyFormat;
+  rsa.messageFormat = RSAMessageFormatSOAEP;
+  rsa.publicKeyBytes( key );
+  return rsa.publicEncrypt( message );
+}
 
-            function testPublicDecrypt( key, message ) {
-                // Create an RSA engine.
-                var rsa = new RSA();
-                rsa.keyFormat = RSAKeyFormat;
-                rsa.messageFormat = RSAMessageFormatSOAEP;
-                rsa.publicKeyBytes( key );
-                return rsa.publicDecrypt( message );
-            }
+function public_decrypt( key, message ) {
+  // Create an RSA engine.
+  var rsa = new RSA();
+  rsa.keyFormat = RSAKeyFormat;
+  rsa.messageFormat = RSAMessageFormatSOAEP;
+  rsa.publicKeyBytes( key );
+  return rsa.publicDecrypt( message );
+}
 
-            function testPrivateEncrypt( key, message ) {
-                // Create an RSA engine.
-                var rsa = new RSA();
-                rsa.keyFormat = RSAKeyFormat;
-                rsa.messageFormat = RSAMessageFormatSOAEP;
-                rsa.privateKeyBytes( key );
-                return rsa.privateEncrypt( message );
-            }
+function private_encrypt( key, message ) {
+  // Create an RSA engine.
+  var rsa = new RSA();
+  rsa.keyFormat = RSAKeyFormat;
+  rsa.messageFormat = RSAMessageFormatSOAEP;
+  rsa.privateKeyBytes( key );
+  return rsa.privateEncrypt( message );
+}
 
-            function testPrivateDecrypt( key, message ) {
-                // Create an RSA engine.
-                var rsa = new RSA();
-                rsa.keyFormat = RSAKeyFormat;
-                rsa.messageFormat = RSAMessageFormatSOAEP;
-                rsa.privateKeyBytes( key );
-                return rsa.privateDecrypt( message );
-            }
+function private_decrypt( key, message ) {
+  // Create an RSA engine.
+  var rsa = new RSA();
+  rsa.keyFormat = RSAKeyFormat;
+  rsa.messageFormat = RSAMessageFormatSOAEP;
+  rsa.privateKeyBytes( key );
+  return rsa.privateDecrypt( message );
+}
 
-            var key = createKeyBytes();
-            var partner_public_key = false;
+var key = createKeyBytes();
+var partner_public_key = false;
 
-            function getPartnerPublicKey( sent_key ) {
-              // Create an RSA engine.
-              if (partner_public_key == false &&
-                  base64x_encode(key.publicKey) != sent_key) {
+function getPartnerPublicKey( sent_key ) {
+  // Create an RSA engine.
+  if (partner_public_key == false &&
+      base64x_encode(key.publicKey) != sent_key) {
 
-                partner_public_key = base64x_decode(sent_key);
-                alert("got partner key " + partner_public_key)
-                // SEND MESSAGE
-                PUBNUB.publish({
-                    channel : "key_exchange",
-                    message : base64x_encode(key.publicKey)
-                })
-              }
-            }
-
-
-    PUBNUB.subscribe({
-        channel  : "key_exchange",      // CONNECT TO THIS CHANNEL.
-        error    : function() {        // LOST CONNECTION (auto reconnects)
-            alert("Connection Lost. Will auto-reconnect when Online.")
-        },
-        callback : function(message) { // RECEIVED A MESSAGE.
-            getPartnerPublicKey(message)
-        },
-        connect  : function() {        // CONNECTION ESTABLISHED.
-
-            // SEND MESSAGE
-            PUBNUB.publish({
-                channel : "key_exchange",
-                message : base64x_encode(key.publicKey)
-            })
-
-        }
+    partner_public_key = base64x_decode(sent_key);
+    alert("got partner key " + partner_public_key)
+    // SEND MESSAGE
+    PUBNUB.publish({
+        channel : "key_exchange",
+        message : base64x_encode(key.publicKey)
     })
+  }
+}
 
-var P    = PUBNUB
+
+PUBNUB.subscribe({
+    channel  : "key_exchange",      // CONNECT TO THIS CHANNEL.
+    error    : function() {        // LOST CONNECTION (auto reconnects)
+        alert("Connection Lost. Will auto-reconnect when Online.")
+    },
+    callback : function(message) { // RECEIVED A MESSAGE.
+        getPartnerPublicKey(message)
+    },
+    connect  : function() {        // CONNECTION ESTABLISHED.
+
+        // SEND MESSAGE
+        PUBNUB.publish({
+            channel : "key_exchange",
+            message : base64x_encode(key.publicKey)
+        })
+
+    }
+})
+
+var P = PUBNUB
 ,   chat = {
     init : function( node_name ) {
         var node = P.$(node_name);
@@ -192,7 +191,7 @@ var P    = PUBNUB
             // Send Message
             P.publish({
                 channel : node_name,
-                message : testPublicEncrypt( partner_public_key, message )
+                message : public_encrypt( partner_public_key, message )
             });
         }
 
@@ -205,7 +204,7 @@ var P    = PUBNUB
     },
 
     subscribe : function(message) {
-        message = utf82str(testPrivateDecrypt(key.privateKey, message));
+        message = utf82str(private_decrypt(key.privateKey, message));
         var br       = '<br/>';
         chat.chatbox.innerHTML = message + br + chat.chatbox.innerHTML;
     }
