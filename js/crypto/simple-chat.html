@@ -1,4 +1,5 @@
 <script src="http://cdn.pubnub.com/pubnub-3.1.min.js"></script>
+	<script src="../sjcl.js"></script>
 	<script src="../tools/packages.js"></script>
 	<script src="../tools/trace.js"></script>
 	<script src="../tools/elapse.js"></script>
@@ -191,7 +192,8 @@ var P = PUBNUB
             // Send Message
             P.publish({
                 channel : node_name,
-                message : public_encrypt( partner_public_key, message )
+                // message : public_encrypt( partner_public_key, message )
+        	message : sjcl.encrypt('test', message)
             });
         }
 
@@ -204,7 +206,8 @@ var P = PUBNUB
     },
 
     subscribe : function(message) {
-        message = utf82str(private_decrypt(key.privateKey, message));
+        //message = utf82str(private_decrypt(key.privateKey, message));
+        message = sjcl.decrypt('test', message);
         var br       = '<br/>';
         chat.chatbox.innerHTML = message + br + chat.chatbox.innerHTML;
     }
@@ -213,5 +216,6 @@ var P = PUBNUB
 
 // Startup Simple Chat
 chat.init('simple-chat');
+
 
 </script>
