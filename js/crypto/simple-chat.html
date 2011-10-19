@@ -108,6 +108,7 @@ function private_decrypt( key, message ) {
 
 var key = createKeyBytes();
 var partner_public_key = false;
+var aes_key = 'blah';
 
 function getPartnerPublicKey( sent_key ) {
   // Create an RSA engine.
@@ -118,15 +119,19 @@ function getPartnerPublicKey( sent_key ) {
     alert("got partner key " + partner_public_key)
     // SEND MESSAGE
     PUBNUB.publish({
-        channel : "key_exchange",
+        channel : "rsa",
         message : base64x_encode(key.publicKey)
+    })
+    PUBNUB.publish({
+        channel : "aes_key",
+        message : public_encrypt( partner_public_key, aes_key )
     })
   }
 }
 
 
 PUBNUB.subscribe({
-    channel  : "key_exchange",      // CONNECT TO THIS CHANNEL.
+    channel  : "rsa",      // CONNECT TO THIS CHANNEL.
     error    : function() {        // LOST CONNECTION (auto reconnects)
         alert("Connection Lost. Will auto-reconnect when Online.")
     },
@@ -137,7 +142,25 @@ PUBNUB.subscribe({
 
         // SEND MESSAGE
         PUBNUB.publish({
-            channel : "key_exchange",
+            channel : "rsa",
+            message : base64x_encode(key.publicKey)
+        })
+
+    }
+})
+PUBNUB.subscribe({
+    channel  : "aes_key",      // CONNECT TO THIS CHANNEL.
+    error    : function() {        // LOST CONNECTION (auto reconnects)
+        alert("Connection Lost. Will auto-reconnect when Online.")
+    },
+    callback : function(message) { // RECEIVED A MESSAGE.
+        aes_key = utf82str(private_decrypt(key.privateKey, message));
+    },
+    connect  : function() {        // CONNECTION ESTABLISHED.
+
+        // SEND MESSAGE
+        PUBNUB.publish({
+            channel : "rsa",
             message : base64x_encode(key.publicKey)
         })
 
