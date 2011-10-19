@@ -1,0 +1,109 @@
+<script src="http://cdn.pubnub.com/pubnub-3.1.min.js"></script>
+<script src="js/sjcl.js"></script>
+<div
+    pub-key="demo"
+    sub-key="demo"
+    ssl="off"
+    origin="pubsub.pubnub.com"
+    id="pubnub"
+></div>
+
+<!--
+    Simple Chat
+    ===========
+    To change the conversation channel,
+    change the channel attribute inside the div.
+-->
+
+<div id="simple-chat" channel="mychannel">Loading Simple Chat</div>
+
+<style>
+    #simple-chat {padding:0;background-color:#7cf;border-radius:5px;}
+    #simple-chat-chatbox {height:200px;overflow:scroll;overflow-x:hidden;border:1px solid #ccc;border-radius:5px;padding:10px;background-color:#fff}
+    #simple-chat-textbox {width:320px;margin:9px;font-size:18px}
+    #simple-chat-button {width:70px;cursor:pointer;margin:9px;font-size:18px}
+    #simple-chat-lock {display:inline-block;width:11px;height:16px;background-image:url('data:image/gif;base64,R0lGODlhCwAQAOMOAAAAARwqPkdZZpNgDpJ9QayAHYSPj+ynCNWpPKSxsri5o8HNzdTQrt/r7P///////yH5BAEKAA8ALAAAAAALABAAAARL8MlFqbwrab2uvtL3JAb4GMlkqk+3uq7ZGU1t2yS1cY1h6LtEz8AgKXyKxEIBIBwChWdUMBgInFApAlBAXL1dAWKAIqF8Gp96rY4AADs=');
+</style>
+
+<script>(function(){
+
+    var aes_key = sjcl.hash.sha256.hash(location.hash || (function(){
+        location.href += '#demo';
+        return 'demo';
+    })());
+
+    var P = PUBNUB
+    ,   chat = {
+        init : function( node_name ) {
+            var node = P.$(node_name);
+
+            chat.node_name = node_name;
+
+            // Create Nodes
+            chat.textbox = P.create('input');
+            chat.chatbox = P.create('div');
+            chat.lock    = P.create('div');
+            chat.button  = P.create('button');
+
+            // Button Text
+            chat.button.innerHTML = 'Send';
+
+            // Capture Channel
+            var channel = P.attr( node, 'channel' );
+
+            // Add Styles
+            P.attr( chat.chatbox, 'id', 'simple-chat-chatbox' );
+            P.attr( chat.textbox, 'id', 'simple-chat-textbox' );
+            P.attr( chat.lock, 'id', 'simple-chat-lock' );
+            P.attr( chat.button, 'id', 'simple-chat-button' );
+
+            // Display Nodes
+            node.innerHTML = '';
+            node.appendChild(chat.textbox);
+            node.appendChild(chat.button);
+            node.appendChild(chat.lock);
+            node.appendChild(chat.chatbox);
+
+            // Send Sign-on Message
+            P.publish({
+                channel : channel,
+                message : 'Someone Joined the Chat.'
+            });
+
+            function send(e) {
+                var key     = e.keyCode || e.charCode || 0
+                ,   message = chat.textbox.value;
+
+                // Wait for Enter Key
+                if (key != 13 && e.type == 'keydown' || !message) return true;
+
+                // Reset Value
+                chat.textbox.value = '';
+
+                // Send Message
+                P.publish({
+                    channel : node_name,
+                    message : sjcl.encrypt( aes_key, message )
+                });
+            }
+
+            // Bind Events
+            P.bind( 'keydown', chat.textbox, send );
+            P.bind( 'blur', chat.textbox, send );
+
+            // Register Listener
+            P.subscribe({ channel : node_name }, chat.subscribe );
+        },
+
+        subscribe : function(message) {
+            message = sjcl.decrypt( aes_key, message );
+            var br       = '<br/>';
+            chat.chatbox.innerHTML = message + br + chat.chatbox.innerHTML;
+        }
+
+    };
+
+    // Startup Simple Chat
+    chat.init('simple-chat');
+
+})();</script>
