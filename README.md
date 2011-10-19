@@ -5,8 +5,16 @@ PubNub with Crypto
 
 In Chrome, Safari or Firefox open:
 
-    file:///__PATH-TO-CRYPUB__/aes-chat.html#MY-SECRET-KEY-HERE
+    file:///__PATH-TO-CRYPUB__/aes-chat.html#MY-PASSWORD-HERE
 
-Replace "__MY-SECRET-KEY-HERE__" with your secret password.
+Replace "__MY-PASSWORD-HERE__" with your secret password.
 
-Finally Open the same URL in another browser window to communicate in secret.
+Finally Open the same URL in another browser window to
+communicate in secret with yourself.
+
+
+Chat with a Friend
+-----------------------------------------------------------------------------
+
+To get a friend to chat, have them follow the same steps above.
+Make sure the password is the same!

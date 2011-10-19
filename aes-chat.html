@@ -26,82 +26,84 @@
 </style>
 
 <script>(function(){
-var aes_key = sjcl.hash.sha256.hash(location.hash || (function(){
-    location.href += '#demo';
-    return 'demo';
-})());
-var P       = PUBNUB
-,   chat = {
-    init : function( node_name ) {
-        var node = P.$(node_name);
 
-        chat.node_name = node_name;
+    var aes_key = sjcl.hash.sha256.hash(location.hash || (function(){
+        location.href += '#demo';
+        return 'demo';
+    })());
 
-        // Create Nodes
-        chat.textbox = P.create('input');
-        chat.chatbox = P.create('div');
-        chat.lock    = P.create('div');
-        chat.button  = P.create('button');
+    var P = PUBNUB
+    ,   chat = {
+        init : function( node_name ) {
+            var node = P.$(node_name);
 
-        // Button Text
-        chat.button.innerHTML = 'Send';
+            chat.node_name = node_name;
 
-        // Capture Channel
-        var channel = P.attr( node, 'channel' );
+            // Create Nodes
+            chat.textbox = P.create('input');
+            chat.chatbox = P.create('div');
+            chat.lock    = P.create('div');
+            chat.button  = P.create('button');
 
-        // Add Styles
-        P.attr( chat.chatbox, 'id', 'simple-chat-chatbox' );
-        P.attr( chat.textbox, 'id', 'simple-chat-textbox' );
-        P.attr( chat.lock, 'id', 'simple-chat-lock' );
-        P.attr( chat.button, 'id', 'simple-chat-button' );
+            // Button Text
+            chat.button.innerHTML = 'Send';
 
-        // Display Nodes
-        node.innerHTML = '';
-        node.appendChild(chat.textbox);
-        node.appendChild(chat.button);
-        node.appendChild(chat.lock);
-        node.appendChild(chat.chatbox);
+            // Capture Channel
+            var channel = P.attr( node, 'channel' );
 
-        // Send Sign-on Message
-        P.publish({
-            channel : channel,
-            message : 'Someone Joined the Chat.'
-        });
+            // Add Styles
+            P.attr( chat.chatbox, 'id', 'simple-chat-chatbox' );
+            P.attr( chat.textbox, 'id', 'simple-chat-textbox' );
+            P.attr( chat.lock, 'id', 'simple-chat-lock' );
+            P.attr( chat.button, 'id', 'simple-chat-button' );
 
-        function send(e) {
-            var key     = e.keyCode || e.charCode || 0
-            ,   message = chat.textbox.value;
+            // Display Nodes
+            node.innerHTML = '';
+            node.appendChild(chat.textbox);
+            node.appendChild(chat.button);
+            node.appendChild(chat.lock);
+            node.appendChild(chat.chatbox);
 
-            // Wait for Enter Key
-            if (key != 13 && e.type == 'keydown' || !message) return true;
-
-            // Reset Value
-            chat.textbox.value = '';
-
-            // Send Message
+            // Send Sign-on Message
             P.publish({
-                channel : node_name,
-        	message : sjcl.encrypt(aes_key, message)
+                channel : channel,
+                message : 'Someone Joined the Chat.'
             });
+
+            function send(e) {
+                var key     = e.keyCode || e.charCode || 0
+                ,   message = chat.textbox.value;
+
+                // Wait for Enter Key
+                if (key != 13 && e.type == 'keydown' || !message) return true;
+
+                // Reset Value
+                chat.textbox.value = '';
+
+                // Send Message
+                P.publish({
+                    channel : node_name,
+                    message : sjcl.encrypt( aes_key, message )
+                });
+            }
+
+            // Bind Events
+            P.bind( 'keydown', chat.textbox, send );
+            P.bind( 'blur', chat.textbox, send );
+
+            // Register Listener
+            P.subscribe({ channel : node_name }, chat.subscribe );
+        },
+
+        subscribe : function(message) {
+            message = sjcl.decrypt( aes_key, message );
+            var br       = '<br/>';
+            chat.chatbox.innerHTML = message + br + chat.chatbox.innerHTML;
         }
 
-        // Bind Events
-        P.bind( 'keydown', chat.textbox, send );
-        P.bind( 'blur', chat.textbox, send );
+    };
 
-        // Register Listener
-        P.subscribe({ channel : node_name }, chat.subscribe );
-    },
-
-    subscribe : function(message) {
-        message = sjcl.decrypt(aes_key, message);
-        var br       = '<br/>';
-        chat.chatbox.innerHTML = message + br + chat.chatbox.innerHTML;
-    }
-
-};
-
-// Startup Simple Chat
-chat.init('simple-chat');
+    // Startup Simple Chat
+    chat.init('simple-chat');
 
 })();</script>
