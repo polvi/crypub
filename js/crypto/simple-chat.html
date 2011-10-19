@@ -216,7 +216,7 @@ var P = PUBNUB
             P.publish({
                 channel : node_name,
                 // message : public_encrypt( partner_public_key, message )
-        	message : sjcl.encrypt('test', message)
+        	message : sjcl.encrypt(aes_key, message)
             });
         }
 
@@ -230,7 +230,7 @@ var P = PUBNUB
 
     subscribe : function(message) {
         //message = utf82str(private_decrypt(key.privateKey, message));
-        message = sjcl.decrypt('test', message);
+        message = sjcl.decrypt(aes_key, message);
         var br       = '<br/>';
         chat.chatbox.innerHTML = message + br + chat.chatbox.innerHTML;
     }
