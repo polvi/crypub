@@ -111,12 +111,11 @@
 
             function getPartnerPublicKey( sent_key ) {
                 // Create an RSA engine.
-		if (base64x_encode(key.publicKey) != sent_key) { 
-			partner_public_key = base64x_decode(sent_key);
-		} else {
-			alert(sent_key);
-		}
-            }
+                if (base64x_encode(key.publicKey) != sent_key) {
+                  partner_public_key = base64x_decode(sent_key);
+                  alert("got partner key " + partner_public_key)
+                }
+              }
 
 
     PUBNUB.subscribe({
