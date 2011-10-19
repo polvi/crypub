@@ -109,6 +109,8 @@
                 // Create an RSA engine.
 		if (hex(key.publicKey) != hex(sent_key)) { 
 			partner_public_key = sent_key;
+		} else {
+			alert(sent_key);
 		}
             }
 
